@@ -195,16 +195,7 @@ class System:
         :param name: file name
         :return: boolean, true - file was found, false - file was not found
         """
-        try:  # for when the method is called everywhere else
-            if name == '':
-                a = open(self.fileName, 'w')
-                a.close()
-            else:  # for when the method is called in __init__
-                b = open(name)
-                b.close()
-            return True
-        except OSError:
-            return False
+        return name in os.listdir() if name else self.fileName in os.listdir()
 
     def fileNameGet(self):
         return self.fileName
