@@ -77,7 +77,7 @@ class GUI:
         self.main_frame = tk.Frame(self.root)
     
     def _grid_frame(self):
-        self.main_frame.place(relx=0.5, rely=0.1)
+        self.main_frame.place(relx=0.3, rely=0.1)
 
     def get_input(self, prompt):
         """
@@ -91,6 +91,7 @@ class GUI:
         self.txtbox.grid(row=1, pady=10)
         self._grid_frame()
         tk.Button(self.main_frame, text="Enter", command=self._store_result).grid(row=1, column=1)
+        self.txtbox.bind("<Return>", lambda event: self._store_result())
         self.root.update()
         self.root.wait_variable(self.result)
         self.clear_frame()
