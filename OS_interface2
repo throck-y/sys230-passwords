@@ -87,10 +87,12 @@ class System:
     """
 
     # Maybe we could add a key to each python file.
-    def __init__(self, name='', securityQ=False):
+    def __init__(self, name='', securityQ=False, input_function=input):
+        self.input_function = input_function
+        self.securityQ = securityQ
         self.fileName = name
         if not self.checkLegality(name):
-            raise Exception("Error - file name invalid")
+            raise FileTypeError("Error - file name invalid")
         if not self.fileExists("mpass.txt") or not self.fileExists("key.key") or not self.fileExists(name):
             self.firstTime()
 
@@ -99,6 +101,7 @@ class System:
     def strHash(self, string_word):
         generate = hashes.Hash(hashes.SHA256())
         generate.update(string_word.encode())
+        
         # The Finalize method is used to perform cleanup operations on unmanaged resources held
         # by the current object before the object is destroyed. The method is protected and therefore
         # is accessible only through this class or through a derived class.
@@ -117,8 +120,10 @@ class System:
         if not self.fileExists("key.key"):
             create = open("key.key", 'x')
             create.close()
+            
             # Indicates file is opened for writing in binary mode.
             create = open("key.key", 'wb')
+            
             # Fernet guarantees that a message encrypted using it cannot be manipulated or read without the key.
             # Used in symmetric cryptography. Fernet key can be in bytes or string. generate_key() is in the Fernet library.
             create.write(Fernet.generate_key())
@@ -143,7 +148,8 @@ class System:
             # Reformats information to where the pandas dataframe can accept it. Prepping the data for pandas.
             SecurityToCsv = [[qList[a] for a in range(len(qList))], [self.strHash(aList[a]) for a in range(len(aList))]]
             secDF = pd.DataFrame(SecurityToCsv)
-            print(secDF)
+            
+            # print(secDF) -> debugging statement for the security questions
             # Where the inputted questions and the answers are written to the security.csv file.
             secDF.to_csv("security.csv", header=False, index=False)
 
@@ -208,21 +214,21 @@ class System:
             content = pd.read_csv(self.fileName, header=None, index_col=False)
             return content
         else:
-            raise Exception("Error - File does not exist")
+            raise PandasError()
 
     # The pandas dataframe is changed and needs to be updated.
     def fileClose(self, panda):
-        if not isinstance(panda, pd.DataFrame):
+        try:
+            if not isinstance(panda, pd.DataFrame):
+                raise PandasError()
+            if self.securityQ == False:
+                panda.to_csv(self.fileName, header=False, index_col=False)
+                self.fileEncrypt()
+            else:
+                panda.iloc[1] = [self.strHash(x) for x in panda.iloc[1]]
+                panda.to_csv(self.fileName, header=False, index=False)
+        except:
             raise PandasError()
-        if self.securityQ == False:
-            panda.to_csv(self.fileName, header=False, index_col=False)
-            self.fileEncrypt()
-        else:
-            panda.iloc[1] = [self.strHash(x) for x in panda.iloc[1]]
-            panda.to_csv(self.fileName, header=False, index=False)
-        # self.fileName = ("password.csv")
-        # directory = " "
-        # filepath = directory + input("Enter filename: ")
 
     def fileCreate(self, file, contents=""):
         """
@@ -271,7 +277,7 @@ class System:
         verifyPassword = str(input_function("Please input your master password. (CASE SENSITIVE)"))
         mPassFile = open("mpass.txt", 'r')
         mPass = mPassFile.read()
-        print(mPass)
+        # print(mPass) -> debug statement to prove mPass was correctly implemented
         mPassFile.close()
         if str(mPass) == str(self.strHash(verifyPassword)):
             keyStorage = open("key.key", 'rb')
@@ -293,35 +299,46 @@ class System:
 
 # Exceptions for errors
 class FileError(Exception):
+    """
+    Exceptions for errors
+    """
     pass
 
 class MasterPasswordError(FileError):
-    # Send a message if the master password is incorrect.
+    """
+    Send a message if the master password is incorrect.
+    """
     def __init__(self, message=''):
         default_message = "Master password is incorrect."
         super().__init__(message if message else default_message)
 
 class FileTypeError(FileError):
+    """
+    Determine if the file can be accessed or not, or if it even exists.
+    """
     def __init__(self, message=''):
-        default_message = "File cannot be accessed."
+        default_message = "Error - file name invalid"
         super().__init__(message if message else default_message)
 
 class PandasError(FileError):
+    """
+    This is used for calling errors to related to the Pandas dataframe.
+    """
     def __init__(self, message=''):
-        default_message = "Input must be a pandas dataframe."
+        default_message = "Error - File does not exist"
         super().__init__(message if message else default_message)
 
-
+"""
 # Perform function calls here.
-#if __name__ == '__main__':
-    #print("Working")
-    #x = System("password.csv")
-    #y = System("security.csv")
-    #x.fileEncrypt()
-    #y.fileEncrypt()
-    #x.fileDecrypt()
-    #y.fileDecrypt()
-
+if __name__ == '__main__':
+    print("Working")
+    x = System("password.csv")
+    y = System("security.csv")
+    x.fileEncrypt()
+    y.fileEncrypt()
+    x.fileDecrypt()
+    y.fileDecrypt()
+"""
 """
 password.csv
     -2 row csv file: r1=username, r2=pass
