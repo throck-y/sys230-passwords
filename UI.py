@@ -15,7 +15,7 @@ class GUI:
                               meant to be called twice)
 
     ====================================================================================================================
-    ! :__init__: Initializes class object
+    ! :__init__: Initializes class object and sets up UI
 
     * update_pass_csv: Updates password csv file
 
@@ -71,13 +71,6 @@ class GUI:
         menu.add_command(label="List Usernames", command=self.list_usernames)
         self.root.config(menu=menu)
 
-        # tk.Button(button_frame, text="Help", command=self.display_help).pack(side="left")
-        # tk.Button(button_frame, text="Retrieve Password", command=self.retrieve_pass).pack(side="left")
-        # tk.Button(button_frame, text="Add Custom Password", command=self.add_pass).pack(side="left")
-        # tk.Button(button_frame, text="Remove Password", command=self.remove_pass).pack(side="left")
-        # tk.Button(button_frame, text="Generate Password", command=lambda: self.add_pass(custom=False)).pack(side="left")
-        # tk.Button(button_frame, text="List Usernames", command=self.list_usernames).pack(side="left")
-        # button_frame.place(relx=0.5, anchor="n") # Horizontally centering buttons
         self.root.after(1000, self.create_interfaces)
         self.root.mainloop()
         self.update_pass_csv()
