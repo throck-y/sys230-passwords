@@ -1,7 +1,9 @@
 import tkinter as tk
 import time
+# This collects the pandas information from the Dataframe python file.
 from pandas import DataFrame
 from OS_interface3 import System, MasterPasswordError
+# Dataframe is from the python file 'Dataframe'
 from Dataframe import Data_Manager
 
 class GUI:
