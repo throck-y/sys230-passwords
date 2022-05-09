@@ -1,9 +1,7 @@
 import tkinter as tk
 import time
-# This collects the pandas information from the Dataframe python file.
 from pandas import DataFrame
-from OS_interface3 import System, MasterPasswordError
-# Dataframe is from the python file 'Dataframe'
+from OS_interface import System, MasterPasswordError
 from Dataframe import Data_Manager
 
 class GUI:
@@ -17,7 +15,7 @@ class GUI:
                               meant to be called twice)
 
     ====================================================================================================================
-    ! :__init__: Initializes class object and sets up UI
+    * :__init__: Initializes class object
 
     * update_pass_csv: Updates password csv file
 
@@ -30,7 +28,9 @@ class GUI:
 
     * _store_result: Stores the result for the get_input function
 
-    ! create_interfaces: Creates OS interface with password file and conducts master password authentication
+    * create_interfaces: Creates OS interface with password file and conducts master password authentication
+
+    * _authenticate: Authenticates user
 
     * display_help: Displays the instructions on the GUI 
                    (Instruction message is in a work in progress)
@@ -42,6 +42,8 @@ class GUI:
     * remove_pass: Removes a password for the user
 
     * list_usernames: Lists usernames of the user
+
+    * factory_reset: Reset to initial system state
     """
     instructions = ("Welcome to the Password Manager!\n"
                     "When first entering the password manager, you will be prompted to set up a master password and security questions.\n"
@@ -71,6 +73,7 @@ class GUI:
         menu.add_command(label="Remove Password", command=self.remove_pass)
         menu.add_command(label="Generate Password", command=lambda: self.add_pass(custom=False))
         menu.add_command(label="List Usernames", command=self.list_usernames)
+        menu.add_command(label="Factory Reset", command=self.factory_reset)
         self.root.config(menu=menu)
 
         self.root.after(1000, self.create_interfaces)
@@ -115,6 +118,9 @@ class GUI:
 
     def create_interfaces(self):
         self.pass_int = System(name="password.csv", get_input=self.get_input)
+        self._authenticate()
+    
+    def _authenticate(self):
         while not self.authenticated:
             try:
                 df = self.pass_int.fileOpen()
@@ -191,6 +197,14 @@ class GUI:
                 tk.Label(self.main_frame, text="Usernames", font="BOLD").grid(row=0)
                 tk.Label(self.main_frame, text=names.to_string(index=False)).grid(row=1)
             self._grid_frame()
+    
+    def factory_reset(self):
+        self.clear_frame()
+        answer = self.get_input("Are you sure? This cannot be undone!\nEnter 'Y' or 'yes' if you would like to do this.")
+        if answer.upper() in {"Y", "YES"}:
+            self.authenticated = False
+            self.pass_int.factoryReset()
+            self._authenticate()
 
 if __name__ == "__main__":
     GUI()
